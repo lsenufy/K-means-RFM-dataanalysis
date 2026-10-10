@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>用户分层项目 · 分析报告（含基准对比与业务价值）</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --bg:#F7F7F5; --card:#FFFFFF; --text:#2C2C2A; --sub:#5F5E5A; --hint:#888780;
+  --line:#E5E3DC; --blue:#185FA5; --blue-l:#85B7EB; --amber:#BA7517; --amber-l:#EF9F27;
+  --gray:#888780; --coral:#D85A30; --green:#639922; --teal:#0F6E56; --red:#C0392B;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Segoe UI",system-ui,sans-serif;
+  font-size:14px;line-height:1.7;-webkit-font-smoothing:antialiased;}
+.wrap{max-width:1100px;margin:0 auto;padding:32px 24px 80px;}
+h1{font-size:26px;font-weight:600;margin:0 0 8px;letter-spacing:-.3px;}
+h2{font-size:19px;font-weight:600;margin:0 0 4px;}
+h3{font-size:15px;font-weight:600;margin:22px 0 10px;}
+p{margin:8px 0;color:var(--sub);}
+.lead{color:var(--sub);font-size:14px;margin:0 0 20px;}
+.hd{border-bottom:2px solid var(--text);padding-bottom:18px;margin-bottom:26px;}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.chip{background:#EFEEE9;border-radius:20px;padding:5px 13px;font-size:12.5px;color:var(--sub);}
+.chip b{color:var(--text);font-weight:600;}
+section{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:24px 26px;margin-bottom:18px;}
+.snum{display:inline-block;font-size:12px;font-weight:600;color:#FFF;background:var(--text);
+  border-radius:6px;padding:2px 8px;margin-right:9px;vertical-align:2px;}
+.note{background:#F4F8FC;border-left:3px solid var(--blue);border-radius:0 8px 8px 0;
+  padding:11px 15px;font-size:13px;color:var(--sub);margin:14px 0;}
+.warn{background:#FDF6F0;border-left:3px solid var(--coral);border-radius:0 8px 8px 0;
+  padding:11px 15px;font-size:13px;color:var(--sub);margin:14px 0;}
+.note b,.warn b{color:var(--text);}
+.grid{display:grid;gap:14px;}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr));}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr));}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr));}
+.kcard{background:#FAFAF8;border:1px solid var(--line);border-radius:11px;padding:15px 16px;}
+.kcard .lb{font-size:12.5px;color:var(--hint);margin-bottom:6px;}
+.kcard .vl{font-size:23px;font-weight:600;letter-spacing:-.5px;line-height:1.25;}
+.kcard .ds{font-size:12.5px;color:var(--sub);margin-top:5px;}
+.tblwrap{overflow-x:auto;margin:14px 0;-webkit-overflow-scrolling:touch;}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:560px;}
+th,td{padding:8px 11px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap;}
+th{background:#F2F1EC;font-weight:600;font-size:12.5px;color:var(--sub);
+  border-bottom:1px solid #DCDAD2;position:sticky;top:0;}
+th:first-child,td:first-child{text-align:left;}
+tbody tr:hover{background:#FAFAF8;}
+td.hl{font-weight:600;color:var(--text);}
+td.pos{color:var(--red);font-weight:600;}
+td.neg{color:var(--green);font-weight:600;}
+.bar{display:inline-block;height:8px;border-radius:4px;background:var(--blue);vertical-align:middle;}
+.chartbox{position:relative;width:100%;margin:10px 0;}
+.legend{display:flex;flex-wrap:wrap;gap:16px;font-size:12.5px;color:var(--sub);margin:6px 0 2px;}
+.legend span{display:flex;align-items:center;gap:6px;}
+.dot{width:10px;height:10px;border-radius:2px;display:inline-block;}
+ol,ul{margin:8px 0;padding-left:22px;color:var(--sub);}
+li{margin:5px 0;}
+.tag{display:inline-block;font-size:11.5px;padding:2px 8px;border-radius:5px;font-weight:600;}
+.tag-r{background:#FCEBEB;color:#A32D2D;}
+.tag-a{background:#FAEEDA;color:#854F0B;}
+.tag-b{background:#E6F1FB;color:#0C447C;}
+.tag-g{background:#EAF3DE;color:#3B6D11;}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:6px 0 4px;}
+.step{flex:1 1 0;min-width:140px;background:#FAFAF8;border:1px solid var(--line);
+  border-radius:10px;padding:12px 14px;}
+.step .st{font-size:13px;font-weight:600;margin-bottom:4px;}
+.step .sd{font-size:12px;color:var(--hint);line-height:1.55;}
+.foot{color:var(--hint);font-size:12.5px;text-align:center;margin-top:26px;}
+@media(max-width:760px){.g3,.g4{grid-template-columns:repeat(2,minmax(0,1fr));}.g2{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hd">
+  <h1>用户分层项目 · 分析报告</h1>
+  <p class="lead">时间切分 → 规则型 RFM / K-means 双路分层 → 未来窗口回测 → <b>基准对比</b> → 交叉验证 → 业务价值与决策模拟</p>
+  <div class="chips" id="metaChips"></div>
+</div>
+
+<section>
+  <h2><span class="snum">摘要</span>五个核心结论</h2>
+  <div class="grid g2" id="summaryCards" style="margin-top:16px"></div>
+</section>
+
+<section>
+  <h2><span class="snum">01</span>数据与方法总览</h2>
+  <div class="flow" id="flowBox" style="margin-top:14px"></div>
+  <div class="note">
+    <b>两条方法主线都只用历史窗口的信息</b>做分层，未来窗口完全不参与建模，只用于回测。
+    规则型 RFM 复刻 Shopify 口径：R、M 按分位数打分，F 按频次分档，<b>FM = ⌊(F+M)/2⌋</b>，
+    再按 R 与 FM 的组合映射到 11 个群组（本数据中「潜在客户」为空，实际 10 组）。
+  </div>
+</section>
+
+<section>
+  <h2><span class="snum">02</span>规则型 RFM 分层结果</h2>
+  <p>10 个人群的历史画像与未来表现。历史窗口 19 个月、未来窗口 5 个月，两者长度不同，<b>金额不可直接比较水平，只看排序与相对强弱</b>。</p>
+  <div class="tblwrap"><table id="rfmTable"></table></div>
+  <h3>各人群人均未来净消费</h3>
+  <div class="chartbox" style="height:360px"><canvas id="cRfmFut" role="img" aria-label="条形图：各规则人群的人均未来净消费，核心高价值最高，曾经忠诚为负"></canvas></div>
+  <div class="note">
+    价值密度 = <b>未来净消费占比 ÷ 客户占比</b>。大于 1 表示该人群贡献的未来价值超过其人数占比。
+    核心高价值客户以 <b>12.3%</b> 的人数贡献 <b>56.6%</b> 的未来净消费（密度 4.59）；
+    而休眠客户占 <b>30.0%</b> 的人数，只贡献 <b>3.6%</b>（密度 0.12）。
+  </div>
+</section>
+
+<section>
+  <h2><span class="snum">03</span>K-means 分簇结果</h2>
+  <div class="grid g2" style="margin-top:14px">
+    <div><div class="chartbox" style="height:250px"><canvas id="cKcurve" role="img" aria-label="折线图：K=2到9的惯性下降与轮廓系数变化"></canvas></div></div>
+    <div><div class="chartbox" style="height:250px"><canvas id="cKsil" role="img" aria-label="折线图：K=2到9的轮廓系数"></canvas></div></div>
+  </div>
+  <div class="legend"><span><i class="dot" style="background:#185FA5"></i>惯性 Inertia（左图）</span><span><i class="dot" style="background:#BA7517"></i>轮廓系数 Silhouette（两图）</span></div>
+  <div class="note">
+    肘部法在 <b>K=5~6</b> 出现明显拐点；轮廓系数在 K=5（0.342）与 K=6（0.343）几乎持平。
+    结合<b>跨随机种子稳定性</b>（K=6 的调整兰德指数 0.9985~1.0000，优于 K=5）与人群规模（六簇均 ≥ 472 人），
+    最终选择 <b>K=6</b>。
+  </div>
+  <h3>六簇画像（编号已按未来价值降序重排）</h3>
+  <div class="tblwrap"><table id="clusTable"></table></div>
+  <div class="chartbox" style="height:320px"><canvas id="cClusFut" role="img" aria-label="条形图：六个簇的人均未来净消费"></canvas></div>
+  <div class="warn">
+    <b>编号说明：</b>簇编号按「未来人均净消费」降序重新标记为 簇0~簇5。
+    这与原 Notebook 中 sklearn 直接输出的数字编号顺序不同（sklearn 版本不同会导致标签漂移），<b>但分簇内容完全一致</b>。
+  </div>
+</section>
+
+<section>
+  <h2><span class="snum">04</span>未来窗口验证：两套分层都有效</h2>
+  <p>用未来 5 个月的实际行为回测，两个维度都呈现清晰的单调排序。</p>
+  <div class="grid g4" id="validCards" style="margin-top:14px"></div>
+  <h3>各簇逐月复购率</h3>
+  <div class="chartbox" style="height:300px"><canvas id="cMonthly" role="img" aria-label="折线图：六个簇在2011年7月至11月的逐月复购率"></canvas></div>
+  <div class="legend" id="monthLegend"></div>
+  <div class="note">
+    六簇的逐月复购率全程保持稳定分层，没有交叉；11 月有轻微回落，属典型的年末前订单节奏，不影响排序结论。
+  </div>
+</section>
+
+<section style="border-color:#C9D9E8">
+  <h2><span class="snum" style="background:var(--blue)">05</span>基准对比：分群真的比「按金额排序」更好吗？</h2>
+  <p>这是本项目<b>最关键、也是原项目缺失</b>的一节。把四种策略放在<b>同一个选择人数</b>下，比较各自覆盖了多少未来净消费。</p>
+  <div class="chartbox" style="height:340px"><canvas id="cLift" role="img" aria-label="折线图：同一选择比例下，按历史M排序的基准线在全部比例上均不低于规则RFM与Kmeans分簇"></canvas></div>
+  <div class="legend">
+    <span><i class="dot" style="background:#5F5E5A"></i>基准（按历史 M 排序）</span>
+    <span><i class="dot" style="background:#185FA5"></i>规则型 RFM</span>
+    <span><i class="dot" style="background:#BA7517"></i>K-means 分簇</span>
+    <span><i class="dot" style="background:#B4B2A9"></i>满分上界（按未来 M）</span>
+  </div>
+  <div class="tblwrap"><table id="liftTable"></table></div>
+  <div class="warn">
+    <b>结论：每一个相同选择人数下，「直接按历史金额排序」都 ≥ 两种分群方式。</b>
+    低选择比例（5%~12%）时规则 RFM 明显落后（10% 选择时 0.545 vs 0.616）；K-means 与基准几乎重合。
+    这说明<b>分群没有提供超过单一历史金额变量的预测增量</b>。
+  </div>
+  <h3>为什么？组标签对未来价值的解释力 η²</h3>
+  <div class="chartbox" style="height:230px"><canvas id="cEta" role="img" aria-label="条形图：规则RFM与Kmeans分簇对未来价值的解释力仅略高于单一历史金额变量"></canvas></div>
+  <p style="font-size:13px">规则 RFM（10 组）η²=0.333，K-means（6 簇）η²=0.330，而<b>只用「历史金额」一个连续变量就有 0.320</b>。
+  原因在于 <b>Spearman(F, M) = 0.847</b>，频次与金额高度共线，RFM 实际接近二维，分群本质上是历史金额的单调重排。</p>
+</section>
+
+<section>
+  <h2><span class="snum">06</span>RFM × K-means 交叉验证</h2>
+  <div class="grid g3" style="margin-top:14px">
+    <div class="kcard"><div class="lb">Cramér's V</div><div class="vl" id="vCramer"></div><div class="ds">两套标签的关联强度</div></div>
+    <div class="kcard"><div class="lb">调整兰德指数 ARI</div><div class="vl" id="vAri"></div><div class="ds">分区的相似度</div></div>
+    <div class="kcard"><div class="lb">标准化互信息 NMI</div><div class="vl" id="vNmi"></div><div class="ds">共享信息比例</div></div>
+  </div>
+  <div class="note">
+    三个指标一致指向<b>中等一致</b>：两套分层部分重叠，但并非同一套结构。
+    注意——<b>两者都基于同一套历史 RFM 特征，交叉一致性不构成独立的效果验证</b>。
+  </div>
+  <div class="warn">
+    <b>分歧用户几乎没有价值。</b>全数据中「规则说低价值但簇说高价值」仅 <b id="dvgA"></b> 人、
+    「规则说高价值但簇说非高价值」仅 <b id="dvgB"></b> 人，合计 <b id="dvgT"></b> 人。
+    因此交叉验证的重点<b>不是找分歧用户，而是看规则人群内部的细分</b>。
+  </div>
+  <h3>交叉单元未来表现（样本 ≥ 30）</h3>
+  <div class="tblwrap"><table id="crossTable"></table></div>
+  <div class="note" id="crossKey"></div>
+</section>
+
+<section>
+  <h2><span class="snum">07</span>业务价值判断与决策模拟</h2>
+  <p>分群不能提高预测效率，但它的价值在于<b>可解释、可运营</b>——「核心高价值客户」能直接对应营销动作，「按金额排序的第 300 名」不能。</p>
+  <div class="grid g2" style="margin-top:14px">
+    <div class="chartbox" style="height:290px"><canvas id="cDensity" role="img" aria-label="条形图：各规则人群的价值密度"></canvas></div>
+    <div class="chartbox" style="height:290px"><canvas id="cClusDensity" role="img" aria-label="条形图：各簇的价值密度"></canvas></div>
+  </div>
+  <div class="legend"><span><i class="dot" style="background:#185FA5"></i>价值密度（未来净消费占比 ÷ 客户占比）</span></div>
+
+  <h3>预算受限下的决策模拟</h3>
+  <p style="font-size:13px">假设高成本触达（电话、专属顾问）有人力上限，各策略能带来多少未来净消费：</p>
+  <div class="tblwrap"><table id="decTable"></table></div>
+  <div class="note" id="decKey"></div>
+
+  <h3>人群 → 动作映射建议</h3>
+  <div class="tblwrap"><table id="actTable"></table></div>
+
+  <div class="warn">
+    <b>业务结论的边界（必须写进报告）：</b>
+    <ul style="margin:8px 0 0">
+      <li>预测「更可能消费」<b>不等于</b>「对优惠或触达反应更大」——后者需要增量实验。</li>
+      <li>运营动作的增量效果<b>必须通过实际干预或 AB 实验验证</b>，本报告只提供优先级假设。</li>
+      <li>不同方法选出的客户数量不同时，<b>不能直接比较净消费覆盖率</b>，必须统一选择人数。</li>
+      <li>本数据无真实干预，任何 ROI / 增量收益均属推断，不可当作既成事实。</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2><span class="snum">08</span>显著性检验与稳健性</h2>
+  <h3>统计检验</h3>
+  <div class="grid g2" style="margin-top:10px">
+    <div class="kcard"><div class="lb">Kruskal-Wallis（规则 RFM 10 组）</div><div class="vl" id="kwRfm"></div><div class="ds">对未来净消费的组间差异，p 极小 → 差异显著</div></div>
+    <div class="kcard"><div class="lb">Kruskal-Wallis（K-means 6 簇）</div><div class="vl" id="kwClus"></div><div class="ds">结论同上</div></div>
+  </div>
+  <div class="note" id="sigNote"></div>
+
+  <h3>稳健性：更换切分点</h3>
+  <p style="font-size:13px">原切分：历史 2009-12~2011-06、未来 2011-07~11。替换为：历史 2009-12~2011-03、未来 2011-04~06（<b id="robN"></b> 位客户）。</p>
+  <div class="chartbox" style="height:250px"><canvas id="cRobust" role="img" aria-label="分组条形图：更换切分点后，基准仍不低于规则RFM，Kmeans与基准接近"></canvas></div>
+  <div class="legend"><span><i class="dot" style="background:#5F5E5A"></i>基准</span><span><i class="dot" style="background:#185FA5"></i>规则 RFM</span><span><i class="dot" style="background:#BA7517"></i>K-means</span></div>
+  <div class="note" id="robKey"></div>
+
+  <h3>稳健性：簇数变化对解释力的影响</h3>
+  <div class="tblwrap"><table id="kstabTable"></table></div>
+  <p style="font-size:13px">解释力随簇数单调上升是必然现象。关键对比是：<b>规则 RFM 的 10 个群组（η²=0.333）≈ 6~7 个无监督簇（0.330~0.339）</b>，
+  说明规则的 10 个群组携带的信息量并不比一个更简单的聚类方案更多。</p>
+</section>
+
+<section>
+  <h2><span class="snum">09</span>结论与局限</h2>
+  <h3>结论</h3>
+  <ol>
+    <li><b>两套分层都有效，但方式不同。</b>规则 RFM 与 K-means 都能把人群按未来价值显著区分（Kruskal-Wallis p &lt; 0.001），复购率与人均未来消费呈清晰单调排序。</li>
+    <li><b>分群没有超越基准。</b>在相同选择人数下，「按历史金额排序」≥ 规则 RFM 与 K-means。分群不是更有效的预测工具。</li>
+    <li><b>分群的价值在于可解释与可运营。</b>规则 RFM 把「连续金额」翻译成可直接驱动营销动作的语义标签，这是它真正的产出。</li>
+    <li><b>K-means 的唯一实质增量在组内细分。</b>核心高价值客户内部，落在簇0 的人均未来消费是落在簇1 的 <b id="ratioTxt"></b> 倍（p &lt; 0.0001）。</li>
+    <li><b>业务上「簇0」比「核心高价值」更高效。</b>簇0 用 472 人覆盖 58.0% 的未来净消费，人均 4,481；核心高价值用 619 人覆盖 56.2%，人均 3,311。</li>
+  </ol>
+  <h3>局限（必须随结论一并报告）</h3>
+  <ul>
+    <li><b>窗口不对称：</b>历史 19 个月 vs 未来 5 个月，金额水平不可直接比较。</li>
+    <li><b>小样本单元：</b>「曾经忠诚」仅 20 人且未来净消费为负；交叉表存在 n&lt;30 的单元，不可外推。</li>
+    <li><b>F 评分偏离标准口径：</b>Shopify 三维均用分位数，本项目 F 使用固定频次分档（1→1, 2→2, 3-4→3, 5-8→4, ≥9→5），属业务化选择。</li>
+    <li><b>同源特征：</b>两种方法都用同一套历史 RFM 特征，交叉一致性不是独立验证。</li>
+    <li><b>无干预验证：</b>所有业务建议均为优先级假设，未经过增量实验。</li>
+    <li><b>聚类边界重叠：</b>轮廓系数 0.343 属中等水平，簇间存在重叠，不宜宣称「分得很开」。</li>
+  </ul>
+  <h3>后续可做</h3>
+  <ul>
+    <li><b>补充特征</b>：品类多样性、退货率、渠道来源、购买间隔趋势——这是突破 η² ≈ 0.33 上限的关键，<b>瓶颈在特征而非模型</b>。</li>
+    <li><b>多切分点稳健性矩阵</b>：2011-03-31 / 04-30 / 05-31 各跑一遍，检验结论在不同切分下的稳定性。</li>
+    <li><b>监督模型（如 XGBoost）</b>：建议在补齐上述特征之后再评估，否则边际收益有限。</li>
+  </ul>
+  <h3>关于 XGBoost 的范围说明</h3>
+  <p style="font-size:13px">本项目聚焦「分层方法与分层有效性验证」，不包含监督式预测建模。
+  在仅有 R / F / M 三个特征、且其中 F 与 M 高度相关（Spearman ρ = 0.847）的条件下，监督模型的边际收益有限——
+  <b>瓶颈在特征，而非模型</b>。若后续引入品类多样性、退货率、渠道来源、购买间隔趋势等特征，再评估监督模型才有意义。</p>
+</section>
+
+<section style="border-color:#D5E3CE">
+  <h2><span class="snum" style="background:var(--green)">10</span>附 · 分层运营方案（落地手册）</h2>
+  <p>把前面的分层结果转成可直接执行的运营动作。排序依据是<b>价值密度</b>（未来价值贡献 ÷ 人数占比）与<b>客户规模</b>：
+  密度 &gt; 1 的人群值得重投入，&lt; 0.3 的人群应自动化或止损。</p>
+
+  <div class="note">
+    <b>一句话资源原则：</b>「核心高价值 + 忠诚客户」共 <b>27.9%</b> 的人数，贡献了 <b>80.5%</b> 的未来净消费；
+    而「休眠客户」占 <b>30.0%</b> 的人数，只贡献 <b>3.6%</b>——<b>预算应向前者集中，而不是平均分摊。</b>
+  </div>
+
+  <h3>① 分层运营总览（规则 RFM 10 人群）</h3>
+  <div class="tblwrap"><table id="opsTable"></table></div>
+
+  <h3>② 资源配置矩阵（价值密度 × 客户规模）</h3>
+  <div class="chartbox" style="height:330px"><canvas id="cBubble" role="img" aria-label="气泡图：横轴为客户占比，纵轴为价值密度，气泡大小为客户数；核心高价值位于左上角高密度小规模区域，休眠客户位于右下角低密度大规模区域"></canvas></div>
+  <div class="legend"><span><i class="dot" style="background:#185FA5"></i>气泡大小 = 客户数</span><span><i class="dot" style="background:#BA7517"></i>虚线位置 = 价值密度 1.0（临界线）</span></div>
+  <div class="grid g2" id="quadrantCards" style="margin-top:14px"></div>
+
+  <h3>③ 六簇的运营对应（K-means 视角）</h3>
+  <p style="font-size:13px">规则人群便于沟通与执行，聚类则给出<b>更细的行为分辨率</b>。两者配合使用：用规则人群定策略，用簇定触达优先级。</p>
+  <div class="tblwrap"><table id="clusOpsTable"></table></div>
+  <div class="note">
+    <b>最有价值的一条：</b>簇0 仅占 9.4% 的人数，却贡献 58.0% 的未来净消费，人均未来消费 4,481 元。
+    若高成本触达（电话、专属顾问）有人力上限，<b>优先给簇0，而不是给整个「核心高价值」人群</b>——
+    用更少的人覆盖更多价值，人均产出还高 35%。
+  </div>
+
+  <h3>④ 三条执行纪律</h3>
+  <ul>
+    <li><b>不向高价值人群打折。</b>核心高价值未来复购率 92.9%，他们本来就会买——发券只会侵蚀毛利。
+    对他们用<b>身份权益</b>（新品抢先、专属客服），对流失风险人群才用<b>折扣</b>。</li>
+    <li><b>休眠客户只做一次自动化召回。</b>1,507 人规模最大但价值最低，无响应就降频止损，不要反复触达伤害送达率。</li>
+    <li><b>先提醒、后给券。</b>流失风险与临近流失人群的召回序列应为「个性化提醒 → 无响应 → 再给限时权益」，
+    避免第一封就上折扣。</li>
+  </ul>
+
+  <div class="warn">
+    <b>运营方案的适用边界：</b>以上均为基于历史行为的<b>优先级假设</b>，不是已验证的因果效果。
+    「更可能消费」不等于「对触达反应更大」——真正的增量效果必须通过实际干预或 AB 实验验证。
+    上线前建议先在单一分层人群上做小规模实验，用对照组验证增量，再决定是否扩展到全量。
+  </div>
+</section>
+
+<div class="foot">
+  数据源：UCI Online Retail II（已清洗）· 分析窗口：历史 <span id="fHist"></span>，未来 <span id="fFut"></span><br>
+  本报告由自动化分析脚本生成，全部指标均可复现。
+</div>
+
+</div>
+
+<script>
+const DATA = {
+ "meta": {
+  "n_customers": 5023,
+  "n_rows": 797885,
+  "hist": "2009-12-01 ~ 2011-06-30",
+  "hist_months": 19,
+  "fut": "2011-07-01 ~ 2011-11-30",
+  "fut_months": 5,
+  "fut_total": 3648946,
+  "oh": 32,
+  "ksel": {
+   "chosen": 6,
+   "sil": 0.343,
+   "ari": [
+    0.9985,
+    0.9981,
+    0.9981,
+    0.9991
+   ]
+  }
+ },
+ "kcurve": {
+  "k": [
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "inertia": [
+   7628.2,
+   5423.1,
+   4284.6,
+   3526.5,
+   3000.9,
+   2663.2,
+   2379.9,
+   2175.5
+  ],
+  "silhouette": [
+   0.4199,
+   0.3453,
+   0.3289,
+   0.341,
+   0.343,
+   0.3231,
+   0.3301,
+   0.3263
+  ]
+ },
+ "rfm": {
+  "name": [
+   "核心高价值",
+   "忠诚客户",
+   "活跃客户",
+   "新客户",
+   "待关注",
+   "潜力客户",
+   "流失风险",
+   "临近流失",
+   "休眠客户",
+   "曾经忠诚"
+  ],
+  "n": [
+   619,
+   781,
+   665,
+   88,
+   247,
+   142,
+   498,
+   455,
+   1508,
+   20
+  ],
+  "share": [
+   0.1232,
+   0.1555,
+   0.1324,
+   0.0175,
+   0.0492,
+   0.0283,
+   0.0991,
+   0.0906,
+   0.3002,
+   0.004
+  ],
+  "rec": [
+   14.2,
+   88.9,
+   40.0,
+   16.0,
+   153.9,
+   64.1,
+   288.7,
+   150.3,
+   350.8,
+   265.5
+  ],
+  "avgF": [
+   18.18,
+   9.63,
+   3.2,
+   1.1,
+   3.67,
+   1.15,
+   4.04,
+   1.58,
+   1.37,
+   16.55
+  ],
+  "histM": [
+   9677.0,
+   4232.0,
+   860.0,
+   222.0,
+   1064.0,
+   225.0,
+   1673.0,
+   372.0,
+   341.0,
+   6330.0
+  ],
+  "histMshare": [
+   0.5066,
+   0.2795,
+   0.0484,
+   0.0017,
+   0.0222,
+   0.0027,
+   0.0705,
+   0.0143,
+   0.0435,
+   0.0107
+  ],
+  "rep": [
+   0.9208,
+   0.7926,
+   0.5985,
+   0.5114,
+   0.4818,
+   0.4155,
+   0.3855,
+   0.3165,
+   0.2102,
+   0.3
+  ],
+  "futM": [
+   3311.0,
+   1121.0,
+   416.0,
+   239.0,
+   259.0,
+   234.0,
+   280.0,
+   126.0,
+   88.0,
+   -57.0
+  ],
+  "futMshare": [
+   0.5617,
+   0.24,
+   0.0757,
+   0.0058,
+   0.0175,
+   0.0091,
+   0.0383,
+   0.0157,
+   0.0364,
+   -0.0003
+  ],
+  "density": [
+   4.558,
+   1.543,
+   0.572,
+   0.329,
+   0.357,
+   0.322,
+   0.386,
+   0.174,
+   0.121,
+   -0.079
+  ]
+ },
+ "clusters": {
+  "id": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5
+  ],
+  "n": [
+   472,
+   1189,
+   949,
+   923,
+   853,
+   637
+  ],
+  "share": [
+   0.094,
+   0.2367,
+   0.1889,
+   0.1838,
+   0.1698,
+   0.1268
+  ],
+  "R": [
+   34.7,
+   63.8,
+   65.7,
+   263.2,
+   241.3,
+   465.4
+  ],
+  "F": [
+   25.41,
+   6.9,
+   2.06,
+   3.45,
+   1.25,
+   1.23
+  ],
+  "M": [
+   14470.0,
+   2444.0,
+   537.0,
+   1283.0,
+   256.0,
+   278.0
+  ],
+  "rep": [
+   0.928,
+   0.7653,
+   0.4847,
+   0.3987,
+   0.2497,
+   0.1256
+  ],
+  "futM": [
+   4481.0,
+   771.0,
+   286.0,
+   263.0,
+   88.0,
+   44.0
+  ],
+  "futMshare": [
+   0.5796,
+   0.2512,
+   0.0743,
+   0.0665,
+   0.0207,
+   0.0077
+  ],
+  "density": [
+   6.168,
+   1.061,
+   0.393,
+   0.362,
+   0.122,
+   0.061
+  ]
+ },
+ "lift": {
+  "sel": [
+   5.0,
+   10.0,
+   12.3,
+   20.0,
+   27.9,
+   30.0,
+   50.0
+  ],
+  "baseline": [
+   0.5027,
+   0.6163,
+   0.6548,
+   0.7478,
+   0.8104,
+   0.822,
+   0.913
+  ],
+  "rfm": [
+   0.4638,
+   0.5446,
+   0.5617,
+   0.7457,
+   0.8017,
+   0.8246,
+   0.909
+  ],
+  "kmeans": [
+   0.494,
+   0.61,
+   0.6538,
+   0.7496,
+   0.807,
+   0.8186,
+   0.9022
+  ],
+  "oracle": [
+   0.5741,
+   0.7065,
+   0.7512,
+   0.8584,
+   0.9265,
+   0.94,
+   1.0
+  ]
+ },
+ "eta2": {
+  "RFM": 0.334,
+  "KMeans": 0.33,
+  "M": 0.32,
+  "F": 0.282,
+  "R": 0.266
+ },
+ "cons": {
+  "cramersV": 0.651,
+  "ari": 0.357,
+  "nmi": 0.545
+ },
+ "cross": [
+  {
+   "group": "核心高价值",
+   "cluster": 0,
+   "n": 314,
+   "futM": 5613,
+   "rep": 0.97
+  },
+  {
+   "group": "忠诚客户",
+   "cluster": 0,
+   "n": 148,
+   "futM": 2378,
+   "rep": 0.89
+  },
+  {
+   "group": "核心高价值",
+   "cluster": 1,
+   "n": 305,
+   "futM": 942,
+   "rep": 0.87
+  },
+  {
+   "group": "忠诚客户",
+   "cluster": 1,
+   "n": 601,
+   "futM": 831,
+   "rep": 0.78
+  },
+  {
+   "group": "忠诚客户",
+   "cluster": 3,
+   "n": 32,
+   "futM": 757,
+   "rep": 0.66
+  },
+  {
+   "group": "活跃客户",
+   "cluster": 1,
+   "n": 211,
+   "futM": 496,
+   "rep": 0.66
+  },
+  {
+   "group": "活跃客户",
+   "cluster": 2,
+   "n": 454,
+   "futM": 378,
+   "rep": 0.57
+  },
+  {
+   "group": "待关注",
+   "cluster": 3,
+   "n": 135,
+   "futM": 268,
+   "rep": 0.47
+  },
+  {
+   "group": "待关注",
+   "cluster": 1,
+   "n": 56,
+   "futM": 267,
+   "rep": 0.52
+  },
+  {
+   "group": "流失风险",
+   "cluster": 3,
+   "n": 478,
+   "futM": 266,
+   "rep": 0.38
+  },
+  {
+   "group": "新客户",
+   "cluster": 2,
+   "n": 87,
+   "futM": 242,
+   "rep": 0.52
+  },
+  {
+   "group": "潜力客户",
+   "cluster": 2,
+   "n": 133,
+   "futM": 239,
+   "rep": 0.42
+  }
+ ],
+ "decision": [
+  {
+   "name": "簇0",
+   "n": 472,
+   "coverage": 0.58,
+   "avg": 4481
+  },
+  {
+   "name": "核心高价值 (Champions)",
+   "n": 619,
+   "coverage": 0.562,
+   "avg": 3311
+  },
+  {
+   "name": "按历史M Top1000",
+   "n": 1000,
+   "coverage": 0.746,
+   "avg": 2723
+  },
+  {
+   "name": "核心高价值+忠诚",
+   "n": 1400,
+   "coverage": 0.802,
+   "avg": 2090
+  },
+  {
+   "name": "Top2簇",
+   "n": 1661,
+   "coverage": 0.831,
+   "avg": 1825
+  }
+ ],
+ "sig": {
+  "kw_rfm": [
+   1804.3,
+   "<1e-300"
+  ],
+  "kw_clus": [
+   1800.0,
+   "<1e-300"
+  ],
+  "champ_split": {
+   "c0_n": 314,
+   "c0_m": 5613,
+   "c3_n": 305,
+   "c3_m": 942,
+   "p": "<0.0001",
+   "ratio": 6.0
+  }
+ },
+ "diverge": {
+  "a_n": 9,
+  "b_n": 32,
+  "total": 41
+ },
+ "monthly": {
+  "months": [
+   "2011-07",
+   "2011-08",
+   "2011-09",
+   "2011-10",
+   "2011-11"
+  ],
+  "series": {
+   "簇0": [
+    0.5996,
+    0.6102,
+    0.6483,
+    0.589,
+    0.697
+   ],
+   "簇1": [
+    0.2481,
+    0.259,
+    0.3255,
+    0.3028,
+    0.3902
+   ],
+   "簇2": [
+    0.1538,
+    0.118,
+    0.177,
+    0.1823,
+    0.2171
+   ],
+   "簇3": [
+    0.0856,
+    0.0683,
+    0.1051,
+    0.1463,
+    0.1376
+   ],
+   "簇4": [
+    0.0387,
+    0.0305,
+    0.0492,
+    0.0692,
+    0.1301
+   ],
+   "簇5": [
+    0.0173,
+    0.0157,
+    0.0267,
+    0.0392,
+    0.0471
+   ]
+  }
+ },
+ "robust": {
+  "sel": [
+   10.0,
+   20.0,
+   30.0
+  ],
+  "baseline": [
+   0.5951,
+   0.7294,
+   0.807
+  ],
+  "rfm": [
+   0.5438,
+   0.7265,
+   0.801
+  ],
+  "kmeans": [
+   0.5927,
+   0.7315,
+   0.7962
+  ],
+  "n_customers": 4699,
+  "kw_rfm_p": "<1e-300"
+ },
+ "kstab": {
+  "4": 0.31,
+  "5": 0.319,
+  "6": 0.33,
+  "7": 0.339
+ }
+};
+const F = (v,d=0)=>Number(v).toLocaleString('zh-CN',{minimumFractionDigits:d,maximumFractionDigits:d});
+const P = (v,d=1)=>(v*100).toFixed(d)+'%';
+const $ = id=>document.getElementById(id);
+const C = {blue:'#185FA5',blueL:'#85B7EB',amber:'#BA7517',amberL:'#EF9F27',gray:'#888780',
+  grayL:'#B4B2A9',coral:'#D85A30',green:'#639922',teal:'#0F6E56',red:'#C0392B'};
+const CLUSC = ['#185FA5','#2E7FBF','#5CA0D8','#9CC4E6','#C9D9E8','#E3EAF0'];
+
+/* ---------- 顶部 ---------- */
+$('metaChips').innerHTML = [
+  ['分析客户数', F(DATA.meta.n_customers)+' 人'],
+  ['历史窗口', DATA.meta.hist+'（'+DATA.meta.hist_months+' 个月）'],
+  ['未来窗口', DATA.meta.fut+'（'+DATA.meta.fut_months+' 个月）'],
+  ['未来净消费总额', '¥'+F(DATA.meta.fut_total)],
+  ['清洗后交易行数', F(DATA.meta.n_rows)],
+].map(x=>`<div class="chip">${x[0]} <b>${x[1]}</b></div>`).join('');
+$('fHist').textContent = DATA.meta.hist; $('fFut').textContent = DATA.meta.fut;
+
+/* ---------- 摘要卡 ---------- */
+const L = DATA.lift;
+function liftAt(p){const i=L.sel.indexOf(p);return i;}
+const i10=liftAt(10), i20=liftAt(20);
+$('summaryCards').innerHTML = [
+  ['① 分群未跑赢基准','0.545 < 0.616',
+   '10% 选择比例下，规则 RFM 覆盖 54.5%，而直接按历史金额排序覆盖 61.6%','r'],
+  ['② 但分层本身有效','p < 0.001',
+   '两套分层都能显著区分未来价值，复购率与人均消费单调排序','g'],
+  ['③ 分群的真正价值','可解释 · 可运营',
+   '把连续金额翻译成可直接驱动营销动作的人群标签，而非更准的预测','b'],
+  ['④ K-means 的实质增量','6.0 倍',
+   '核心高价值内部：落在簇0 的人均未来消费 5,613 元 vs 簇1 的 942 元','a'],
+  ['⑤ 业务上更优的选择','簇0',
+   '472 人覆盖 58.0% 未来净消费、人均 4,481 元，优于核心高价值的 619 人 / 56.2% / 3,311 元','b'],
+  ['⑥ 稳健性通过','结论不变',
+   '更换切分点后，基准仍不低于两种分群，核心结论稳定','g'],
+].map(x=>`<div class="kcard">
+  <div class="lb">${x[0]} <span class="tag tag-${x[3]}">${x[1]}</span></div>
+  <div class="ds" style="margin-top:8px;line-height:1.6">${x[2]}</div></div>`).join('');
+
+/* ---------- 流程 ---------- */
+$('flowBox').innerHTML = [
+  ['① 清洗与切分','去重、去空值、C 发票规则、Price ≥ 0；按时间切历史 / 未来'],
+  ['② 规则型 RFM','R/M 分位数 + F 频次分档 → FM=⌊(F+M)/2⌋ → 11 群组'],
+  ['③ K-means','log1p + 标准化 + 肘部/轮廓 + 跨种子 ARI → K=6'],
+  ['④ 未来回测','两套分层各自的复购率、未来订单、未来净消费'],
+  ['⑤ 基准对比','统一选择人数下比较覆盖度（本次新增）'],
+].map(x=>`<div class="step"><div class="st">${x[0]}</div><div class="sd">${x[1]}</div></div>`).join('');
+
+/* ---------- 表格工具 ---------- */
+function table(el, head, rows){
+  el.innerHTML = '<thead><tr>'+head.map(h=>`<th>${h}</th>`).join('')+'</tr></thead><tbody>'+
+    rows.map(r=>'<tr>'+r.map(c=>c).join('')+'</tr>').join('')+'</tbody>';
+}
+
+/* ---------- 规则 RFM 表 ---------- */
+const R = DATA.rfm;
+table($('rfmTable'),
+ ['人群','客户数','客户占比','平均最近购买(天)','人均频次','人均历史消费','历史消费占比','未来复购率','人均未来消费','未来消费占比','价值密度'],
+ R.name.map((n,i)=>[
+   `<td class="hl">${n}</td>`,`<td>${F(R.n[i])}</td>`,`<td>${P(R.share[i])}</td>`,
+   `<td>${F(R.rec[i],1)}</td>`,`<td>${R.avgF[i].toFixed(2)}</td>`,
+   `<td>¥${F(R.histM[i])}</td>`,`<td>${P(R.histMshare[i])}</td>`,
+   `<td>${P(R.rep[i])}</td>`,
+   `<td class="${R.futM[i]<0?'neg':'pos'}">¥${F(R.futM[i])}</td>`,
+   `<td>${P(R.futMshare[i])}</td>`,
+   `<td class="hl">${R.density[i].toFixed(2)}</td>`]));
+
+/* ---------- 簇表 ---------- */
+const Cc = DATA.clusters;
+table($('clusTable'),
+ ['簇','客户数','客户占比','平均最近购买(天)','人均频次','人均历史消费','未来复购率','人均未来消费','未来消费占比','价值密度'],
+ Cc.id.map((cid,i)=>[
+   `<td class="hl">簇${cid}</td>`,`<td>${F(Cc.n[i])}</td>`,`<td>${P(Cc.share[i])}</td>`,
+   `<td>${F(Cc.R[i],1)}</td>`,`<td>${Cc.F[i].toFixed(2)}</td>`,`<td>¥${F(Cc.M[i])}</td>`,
+   `<td>${P(Cc.rep[i])}</td>`,`<td class="pos">¥${F(Cc.futM[i])}</td>`,
+   `<td>${P(Cc.futMshare[i])}</td>`,`<td class="hl">${Cc.density[i].toFixed(2)}</td>`]));
+
+/* ---------- 验证卡 ---------- */
+$('validCards').innerHTML = [
+  ['最高复购人群','核心高价值 '+P(R.rep[R.name.indexOf('核心高价值')])],
+  ['最低复购人群','休眠客户 '+P(R.rep[R.name.indexOf('休眠客户')])],
+  ['最强未来价值人群','核心高价值 ¥'+F(R.futM[R.name.indexOf('核心高价值')])],
+  ['价值密度最高人群','核心高价值 '+R.density[R.name.indexOf('核心高价值')].toFixed(2)],
+].map(x=>`<div class="kcard"><div class="lb">${x[0]}</div><div class="vl" style="font-size:19px">${x[1]}</div></div>`).join('');
+
+/* ---------- lift 表 ---------- */
+table($('liftTable'),
+ ['选择比例','基准（按历史M）','规则 RFM','K-means 簇','满分上界','基准领先 RFM'],
+ L.sel.map((s,i)=>[
+   `<td class="hl">${s}%</td>`,`<td class="hl">${L.baseline[i].toFixed(3)}</td>`,
+   `<td>${L.rfm[i].toFixed(3)}</td>`,`<td>${L.kmeans[i].toFixed(3)}</td>`,
+   `<td>${L.oracle[i].toFixed(3)}</td>`,
+   `<td class="${(L.baseline[i]-L.rfm[i])>0?'pos':'neg'}">${(L.baseline[i]-L.rfm[i]>0?'+':'')}${(L.baseline[i]-L.rfm[i]).toFixed(3)}</td>`]));
+
+/* ---------- 交叉单元 ---------- */
+table($('crossTable'), ['规则人群','簇','人数','人均未来消费','未来复购率'],
+  DATA.cross.map(r=>[`<td class="hl">${r.group}</td>`,`<td>簇${r.cluster}</td>`,`<td>${F(r.n)}</td>`,
+    `<td class="pos">¥${F(r.futM)}</td>`,`<td>${P(r.rep,0)}</td>`]));
+const cs = DATA.sig.champ_split;
+$('crossKey').innerHTML = `两条有效结论：<br>1）<b>核心高价值 × 簇0</b>（${cs.c0_n} 人）人均未来消费 <b>¥${F(cs.c0_m)}</b>，
+  是同人群落在<b>簇1</b>（${cs.c3_n} 人）的 <b>${cs.ratio.toFixed(1)} 倍</b>（¥${F(cs.c3_m)}，Mann-Whitney p &lt; 0.0001），
+  这是 K-means 相对规则 RFM 的唯一实质增量。<br>
+  2）跨越规则标签看，<b>簇0 整体</b>是最具效率的高价值集合：仅占 9.4% 人数，贡献近 6 成的未来净消费。`;
+$('dvgA').textContent = DATA.diverge.a_n; $('dvgB').textContent = DATA.diverge.b_n;
+$('dvgT').textContent = DATA.diverge.total;
+$('vCramer').textContent = DATA.cons.cramersV.toFixed(3);
+$('vAri').textContent = DATA.cons.ari.toFixed(3);
+$('vNmi').textContent = DATA.cons.nmi.toFixed(3);
+
+/* ---------- 决策表 ---------- */
+table($('decTable'), ['策略','人数','覆盖未来净消费','人均未来消费'],
+  DATA.decision.map(r=>[`<td class="hl">${r.name}</td>`,`<td>${F(r.n)}</td>`,
+    `<td class="pos">${P(r.coverage)}</td>`,`<td>¥${F(r.avg)}</td>`]));
+const d0=DATA.decision[0], d1=DATA.decision[1];
+$('decKey').innerHTML = `<b>关键发现：</b>簇0 用 <b>${F(d0.n)}</b> 人（比核心高价值的 ${F(d1.n)} 人少 ${F(d1.n-d0.n)} 人）
+  覆盖了 <b>${P(d0.coverage)}</b> 的未来净消费，反而高于核心高价值的 ${P(d1.coverage)}，人均还高出
+  <b>${P(d0.avg/d1.avg-1,0)}</b>。若高成本触达有人力上限，<b>优先投给簇0 比投给「核心高价值」更划算</b>——
+  但需注意：这是预测效率上的比较，真正的增量效果仍需 AB 实验。`;
+
+/* ---------- 动作映射 ---------- */
+const ACT = {
+  '核心高价值':['VIP 维护','专属权益、新品优先、转介绍激励；不打折'],
+  '忠诚客户':['提频增购','会员计划、搭配推荐、评价邀请'],
+  '活跃客户':['向上培养','热销推荐、满额升级、促其进入忠诚层'],
+  '新客户':['首购转二购','欢迎序列、复购券、品类教育'],
+  '待关注':['即时唤醒','限时权益、个性化触达'],
+  '潜力客户':['低成本培育','内容种草、补货提醒'],
+  '流失风险':['召回第一波','个性化提醒 → 无响应再给offer'],
+  '临近流失':['召回第二波','实用资源 + 热销折扣'],
+  '休眠客户':['低成本自动召回','一次邮件；无响应则降频止损'],
+  '曾经忠诚':['个案诊断','样本仅 20 人且未来为负，先排查异常再做高价值触达'],
+};
+table($('actTable'), ['规则人群','客户占比','价值密度','建议动作','具体方式'],
+  R.name.map((n,i)=>{const a=ACT[n]||['—','—'];
+    return [`<td class="hl">${n}</td>`,`<td>${P(R.share[i])}</td>`,`<td>${R.density[i].toFixed(2)}</td>`,
+      `<td>${a[0]}</td>`,`<td style="text-align:left;white-space:normal">${a[1]}</td>`];}));
+
+/* ---------- 检验 ---------- */
+$('kwRfm').textContent = 'H = '+DATA.sig.kw_rfm[0].toFixed(1);
+$('kwClus').textContent = 'H = '+DATA.sig.kw_clus[0].toFixed(1);
+$('sigNote').innerHTML = `两组检验的 p 值均 <b>小于 1e-300</b>，拒绝「各组未来价值相同」的原假设：
+  分层确实把人群区分开了。但要强调——<b>统计显著 ≠ 有实际增量价值</b>，后者由第 05 节的基准对比回答。`;
+$('robN').textContent = F(DATA.robust.n_customers);
+$('robKey').innerHTML = `更换切分点后：基准 ${DATA.robust.baseline.map(v=>v.toFixed(3)).join(' / ')}，
+  规则 RFM ${DATA.robust.rfm.map(v=>v.toFixed(3)).join(' / ')}，
+  K-means ${DATA.robust.kmeans.map(v=>v.toFixed(3)).join(' / ')}（选择比例 ${DATA.robust.sel.join('%、')}%）。
+  <b>基准依然不低于规则 RFM，K-means 与基准接近</b>——核心结论对切分点不敏感。
+  注意本次切分下规则 RFM 明显靠后（0.544 vs 0.595），进一步印证分群并非更优的预测工具。`;
+table($('kstabTable'), ['簇数 K','对未来价值的解释力 η²'],
+  Object.keys(DATA.kstab).map(k=>[`<td class="hl">K = ${k}</td>`,`<td>${DATA.kstab[k].toFixed(3)}</td>`])
+  .concat([[`<td class="hl">规则 RFM（10 组）</td>`,`<td class="pos">${DATA.eta2.RFM.toFixed(3)}</td>`]]));
+$('ratioTxt').textContent = cs.ratio.toFixed(1);
+
+/* ================= 图表 ================= */
+const baseOpt = (yFmt)=>({responsive:true,maintainAspectRatio:false,
+  plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.dataset.label+'：'+(yFmt?yFmt(c.parsed.y):c.parsed.y)}}},
+  scales:{x:{ticks:{color:'#5F5E5A',font:{size:11.5}},grid:{display:false}},
+          y:{ticks:{color:'#5F5E5A',font:{size:11.5}},grid:{color:'rgba(0,0,0,0.06)'}}}});
+
+/* 固定高度容器 */
+document.querySelectorAll('.chartbox').forEach(e=>{ if(!e.style.height) e.style.height='280px'; });
+
+/* 1. k 曲线（惯性） */
+new Chart($('cKcurve'),{type:'line',data:{labels:DATA.kcurve.k,datasets:[
+  {label:'Inertia',data:DATA.kcurve.inertia,borderColor:C.blue,backgroundColor:C.blue,
+   pointRadius:3.5,tension:.25,borderWidth:2}]},
+  options:{...baseOpt(v=>F(v)),plugins:{legend:{display:false},
+   tooltip:{callbacks:{label:c=>'惯性 '+F(c.parsed.y)}}},
+   scales:{x:{title:{display:true,text:'簇数 K',color:'#5F5E5A',font:{size:11.5}},ticks:{color:'#5F5E5A',font:{size:11.5}},grid:{display:false}},
+     y:{title:{display:true,text:'惯性 Inertia',color:'#5F5E5A',font:{size:11.5}},ticks:{color:'#5F5E5A',font:{size:11.5}},grid:{color:'rgba(0,0,0,0.06)'}}}}});
+
+/* 2. 轮廓系数 */
+new Chart($('cKsil'),{type:'line',data:{labels:DATA.kcurve.k,datasets:[
+  {label:'Silhouette',data:DATA.kcurve.silhouette,borderColor:C.amber,backgroundColor:C.amber,
+   pointRadius:4,tension:.25,borderWidth:2}]},
+  options:{...baseOpt(v=>v.toFixed(3)),plugins:{legend:{display:false},
+   tooltip:{callbacks:{label:c=>'轮廓系数 '+c.parsed.y.toFixed(3)}}},
+   scales:{x:{title:{display:true,text:'簇数 K',color:'#5F5E5A',font:{size:11.5}},ticks:{color:'#5F5E5A',font:{size:11.5}},grid:{display:false}},
+     y:{min:0.30,max:0.44,title:{display:true,text:'轮廓系数',color:'#5F5E5A',font:{size:11.5}},ticks:{color:'#5F5E5A',font:{size:11.5}},grid:{color:'rgba(0,0,0,0.06)'}}}}});
+
+/* 3. RFM 人均未来消费 */
+new Chart($('cRfmFut'),{type:'bar',data:{labels:R.name,datasets:[
+  {label:'人均未来净消费',data:R.futM,
+   backgroundColor:R.futM.map(v=>v<0?'#C0392B':(v>1000?'#B03A2E':'#378ADD')),borderRadius:4}]},
+  options:{...baseOpt(v=>'¥'+F(v)),indexAxis:'y',plugins:{legend:{display:false},
+   tooltip:{callbacks:{label:c=>'人均未来净消费 ¥'+F(c.parsed.x)}}},
+   scales:{x:{ticks:{color:'#5F5E5A',font:{size:11.5},callback:v=>F(v)},grid:{color:'rgba(0,0,0,0.06)'}},
+     y:{ticks:{color:'#2C2C2A',font:{size:12}},grid:{display:false}}}}});
+
+/* 4. 簇人均未来消费 */
+new Chart($('cClusFut'),{type:'bar',data:{labels:Cc.id.map(i=>'簇'+i),datasets:[
+  {label:'人均未来净消费',data:Cc.futM,backgroundColor:CLUSC,borderRadius:4}]},
+  options:{...baseOpt(v=>'¥'+F(v)),plugins:{legend:{display:false},
+   tooltip:{callbacks:{label:c=>'人均未来净消费 ¥'+F(c.parsed.y)}}},
+   scales:{x:{ticks:{color:'#2C2C2A',font:{size:12}},grid:{display:false}},
+     y:{ticks:{color:'#5F5E5A',font:{size:11.5},callback:v=>F(v)},grid:{color:'rgba(0,0,0,0.06)'}}}}});
+
+/* 5. 逐月复购率 */
+new Chart($('cMonthly'),{type:'line',data:{labels:DATA.monthly.months,datasets:
+  Object.keys(DATA.monthly.series).map((k,idx)=>({
+    label:k,data:DATA.monthly.series[k],borderColor:CLUSC[idx],backgroundColor:CLUSC[idx],
+    pointRadius:3,borderWidth:2,tension:.25,
+    borderDash: idx>2?[5,3]:[] }))},
+  options:{...baseOpt(v=>P(v,1)),plugins:{legend:{display:false},
+   tooltip:{callbacks:{label:c=>c.dataset.label+'：'+P(c.parsed.y,1)}}},
+   scales:{x:{ticks:{color:'#5F5E5A',font:{size:11.5}},grid:{display:false}},
+     y:{ticks:{color:'#5F5E5A',font:{size:11.5},callback:v=>P(v,0)},grid:{color:'rgba(0,0,0,0.06)'}}}}});
+$('monthLegend').innerHTML = Object.keys(DATA.monthly.series).map((k,i)=>
+  `<span><i class="dot" style="background:${CLUSC[i]}"></i>${k}</span>`).join('');
+
+/* 6. lift 曲线（核心） */
+new Chart($('cLift'),{type:'line',data:{labels:L.sel.map(s=>s+'%'),datasets:[
+  {label:'基准（按历史M排序）',data:L.baseline,borderColor:'#5F5E5A',backgroundColor:'#5F5E5A',
+   borderWidth:2.5,pointRadius:4.5,pointStyle:'circle',tension:.25},
+  {label:'规则型 RFM',data:L.rfm,borderColor:C.blue,backgroundColor:C.blue,
+   borderWidth:2,pointRadius:5,pointStyle:'triangle',tension:.25},
+  {label:'K-means 分簇',data:L.kmeans,borderColor:C.amber,backgroundColor:C.amber,
+   borderWidth:2,pointRadius:4.5,pointStyle:'rect',tension:.25},
+  {label:'满分上界（按未来M）',data:L.oracle,borderColor:'#B4B2A9',backgroundColor:'#B4B2A9',
+   borderWidth:1.5,borderDash:[6,4],pointRadius:3.5,pointStyle:'crossRot',tension:.25}]},
+  options:{...baseOpt(v=>P(v,1)),plugins:{legend:{display:false},
+   tooltip:{callbacks:{label:c=>c.dataset.label+'：'+P(c.parsed.y,1)}}},
+   scales:{x:{title:{display:true,text:'选择的客户比例',color:'#5F5E5A',font:{size:12}},
+     ticks:{color:'#5F5E5A',font:{size:11.5},autoSkip:false},grid:{color:'rgba(0,0,0,0.06)'}},
+     y:{min:0.4,max:1.0,title:{display:true,text:'覆盖的未来净消费占比',color:'#5F5E5A',font:{size:12}},
+     ticks:{color:'#5F5E5A',font:{size:11.5},callback:v=>P(v,0)},grid:{color:'rgba(0,0,0,0.06)'}}}}});
+
+/* 7. η² */
+new Chart($('cEta'),{type:'bar',data:{labels:['规则 RFM（10组）','K-means（6簇）','仅历史金额 M','仅历史频次 F','仅最近购买 R'],
+  datasets:[{label:'η²',data:[DATA.eta2.RFM,DATA.eta2.KMeans,DATA.eta2.M,DATA.eta2.F,DATA.eta2.R],
+   backgroundColor:['#378ADD','#5CA0D8','#BA7517','#EF9F27','#F2C88A'],borderRadius:4}]},
+  options:{...baseOpt(v=>v.toFixed(3)),plugins:{legend:{display:false},
+   tooltip:{callbacks:{label:c=>'η² = '+c.parsed.y.toFixed(3)}}},
+   scales:{x:{ticks:{color:'#2C2C2A',font:{size:11.5},autoSkip:false,maxRotation:0},grid:{display:false}},
+     y:{min:0.2,max:0.38,ticks:{color:'#5F5E5A',font:{size:11.5}},grid:{color:'rgba(0,0,0,0.06)'}}}}});
+
+/* 8. 价值密度（RFM） */
+new Chart($('cDensity'),{type:'bar',data:{labels:R.name,datasets:[
+  {label:'价值密度',data:R.density,
+   backgroundColor:R.density.map(v=>v<0?'#C0392B':(v>=1?'#185FA5':'#85B7EB')),borderRadius:4}]},
+  options:{...baseOpt(v=>v.toFixed(2)),indexAxis:'y',plugins:{legend:{display:false},
+   tooltip:{callbacks:{label:c=>'价值密度 '+c.parsed.x.toFixed(2)}}},
+   scales:{x:{ticks:{color:'#5F5E5A',font:{size:11.5}},grid:{color:'rgba(0,0,0,0.06)'}},
+     y:{ticks:{color:'#2C2C2A',font:{size:11.5}},grid:{display:false}}}}});
+
+/* 9. 价值密度（簇） */
+new Chart($('cClusDensity'),{type:'bar',data:{labels:Cc.id.map(i=>'簇'+i),datasets:[
+  {label:'价值密度',data:Cc.density,backgroundColor:CLUSC,borderRadius:4}]},
+  options:{...baseOpt(v=>v.toFixed(2)),plugins:{legend:{display:false},
+   tooltip:{callbacks:{label:c=>'价值密度 '+c.parsed.y.toFixed(2)}}},
+   scales:{x:{ticks:{color:'#2C2C2A',font:{size:12}},grid:{display:false}},
+     y:{ticks:{color:'#5F5E5A',font:{size:11.5}},grid:{color:'rgba(0,0,0,0.06)'}}}}});
+
+/* 10. 稳健性 */
+new Chart($('cRobust'),{type:'bar',data:{labels:DATA.robust.sel.map(s=>s+'%'),datasets:[
+  {label:'基准',data:DATA.robust.baseline,backgroundColor:'#5F5E5A',borderRadius:4},
+  {label:'规则 RFM',data:DATA.robust.rfm,backgroundColor:C.blue,borderRadius:4},
+  {label:'K-means',data:DATA.robust.kmeans,backgroundColor:C.amber,borderRadius:4}]},
+  options:{...baseOpt(v=>P(v,1)),plugins:{legend:{display:false},
+   tooltip:{callbacks:{label:c=>c.dataset.label+'：'+P(c.parsed.y,1)}}},
+   scales:{x:{title:{display:true,text:'选择的客户比例（替换切分点后）',color:'#5F5E5A',font:{size:11.5}},
+     ticks:{color:'#5F5E5A',font:{size:11.5}},grid:{color:'rgba(0,0,0,0.06)'}},
+     y:{min:0.5,max:0.85,ticks:{color:'#5F5E5A',font:{size:11.5},callback:v=>P(v,0)},grid:{color:'rgba(0,0,0,0.06)'}}}}});
+
+/* ============ 10. 分层运营方案 ============ */
+const OPS = [
+  {goal:'维系增值', ch:'专属顾问 / 私域 1v1', freq:'每月 1–2 次', offer:'新品抢先、专属客服、身份权益、转介绍奖励', kpi:'留存率、客单价、转介绍数', res:'高投入', cls:'tag-r'},
+  {goal:'提频升级', ch:'会员体系 + 邮件', freq:'每周 1 次', offer:'会员等级、搭配推荐、评价邀请', kpi:'复购频次、客单价', res:'中高投入', cls:'tag-a'},
+  {goal:'向上培养', ch:'邮件 + 站内推荐', freq:'每周 1 次', offer:'热销榜、满额升级、组合装', kpi:'晋升忠诚率', res:'中投入', cls:'tag-a'},
+  {goal:'首购转二购', ch:'欢迎序列（自动化）', freq:'首 30 天 5–6 次', offer:'使用指南、复购券、品类教育', kpi:'90 天二购率', res:'中投入', cls:'tag-a'},
+  {goal:'即时唤醒', ch:'邮件 + 短信', freq:'每 2 周 1 次', offer:'限时权益、个性化清单', kpi:'唤醒率', res:'中低投入', cls:'tag-b'},
+  {goal:'低成本培育', ch:'内容 / EDM', freq:'每月 1 次', offer:'品牌内容、补货提醒', kpi:'互动率', res:'低投入', cls:'tag-b'},
+  {goal:'召回第一波', ch:'个性化提醒 → offer', freq:'2 周 1 次 × 2 轮', offer:'先提醒，无响应再给折扣', kpi:'召回率', res:'中投入（谨慎）', cls:'tag-a'},
+  {goal:'召回第二波', ch:'邮件 + 短信', freq:'每月 1 次', offer:'实用资源 + 热销折扣', kpi:'召回率', res:'低投入', cls:'tag-b'},
+  {goal:'自动召回或止损', ch:'自动化邮件', freq:'每季度 1 次', offer:'一次内容 + 大额券；无响应降频', kpi:'回收率、退订率', res:'极低投入', cls:'tag-g'},
+  {goal:'个案诊断', ch:'人工核查', freq:'—', offer:'先排查未来负金额原因，暂缓触达', kpi:'—', res:'暂缓', cls:'tag-g'},
+];
+table($('opsTable'), ['人群','规模','价值密度','运营目标','触达方式','频次','权益 / 内容','核心 KPI','资源档位'],
+  R.name.map((n,i)=>{const o=OPS[i];return [
+    `<td class="hl">${n}</td>`,
+    `<td>${F(R.n[i])} 人<br><span style="color:var(--hint);font-size:12px">${P(R.share[i])}</span></td>`,
+    `<td class="hl">${R.density[i].toFixed(2)}</td>`,
+    `<td>${o.goal}</td>`,`<td style="text-align:left">${o.ch}</td>`,`<td>${o.freq}</td>`,
+    `<td style="text-align:left;white-space:normal;min-width:180px">${o.offer}</td>`,
+    `<td style="text-align:left">${o.kpi}</td>`,
+    `<td><span class="tag ${o.cls}">${o.res}</span></td>`];}));
+
+const QUAD = [
+  {t:'① 重投入区',d:'价值密度 ≥ 1',who:'核心高价值（619 人）、忠诚客户（781 人）',
+   why:'合计 1,400 人，贡献 80.5% 的未来净消费。',c:'#185FA5'},
+  {t:'② 重点提效区',d:'密度 0.3 ~ 1 且规模 ≥ 400',who:'活跃客户（665 人）、流失风险（498 人）',
+   why:'规模可观、仍有提升空间，值得定向培育与召回。',c:'#378ADD'},
+  {t:'③ 轻触达区',d:'密度 0.3 ~ 1 且规模 < 400',who:'待关注（247 人）、潜力客户（142 人）、新客户（88 人）',
+   why:'单群规模小，用自动化流程管理，不占人力。',c:'#7FB3DE'},
+  {t:'④ 自动化 / 止损区',d:'价值密度 < 0.3',who:'休眠客户（1,507 人）、临近流失（454 人）、曾经忠诚（20 人）',
+   why:'贡献的未来价值极低，只保留低成本自动触达，无响应即降频。',c:'#B4B2A9'},
+];
+$('quadrantCards').innerHTML = QUAD.map(q=>`<div class="kcard" style="border-left:3px solid ${q.c}">
+  <div class="lb">${q.t} <span style="color:var(--hint);font-weight:400">· ${q.d}</span></div>
+  <div style="font-size:13px;font-weight:500;margin:7px 0 5px;color:var(--text)">${q.who}</div>
+  <div class="ds" style="line-height:1.6">${q.why}</div></div>`).join('');
+
+const CLUSPOS = [
+  {p:'VIP 优先池', a:'高成本触达（电话、专属顾问）首选；专属权益，不打折'},
+  {p:'常规会员盘', a:'会员等级 + 搭配推荐，稳守复购'},
+  {p:'邮件主战场', a:'自动化 EDM 提频，内容分群投放'},
+  {p:'邮件主战场', a:'同上，控制频次避免骚扰'},
+  {p:'自动化召回', a:'一次性召回，无响应即降频'},
+  {p:'止损区', a:'仅保留低频内容，不投付费流量'},
+];
+table($('clusOpsTable'), ['簇','规模','未来价值占比','价值密度','定位','建议'],
+  Cc.id.map((cid,i)=>[`<td class="hl">簇${cid}</td>`,
+    `<td>${F(Cc.n[i])} 人<br><span style="color:var(--hint);font-size:12px">${P(Cc.share[i])}</span></td>`,
+    `<td>${P(Cc.futMshare[i])}</td>`,`<td class="hl">${Cc.density[i].toFixed(2)}</td>`,
+    `<td>${CLUSPOS[i].p}</td>`,`<td style="text-align:left;white-space:normal;min-width:200px">${CLUSPOS[i].a}</td>`]));
+
+/* 资源配置气泡图 */
+function bubColor(d){return d<0?'#C0392B':(d>=1?'#185FA5':(d>=0.3?'#5CA0D8':'#B4B2A9'));}
+new Chart($('cBubble'),{type:'bubble',data:{datasets:[
+  {label:'人群',data:R.name.map((n,i)=>({x:+(R.share[i]*100).toFixed(2),y:R.density[i],
+     r:3+Math.sqrt(R.n[i])/2.2,label:n,n:R.n[i]})),
+   backgroundColor:R.density.map(d=>bubColor(d)+'CC'),borderColor:R.density.map(bubColor),borderWidth:1.5},
+  {label:'密度临界线',type:'line',data:[{x:0,y:1},{x:33,y:1}],borderColor:'#BA7517',
+   borderWidth:1.5,borderDash:[6,4],pointRadius:0,fill:false,tension:0}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+    tooltip:{filter:it=>it.datasetIndex===0,callbacks:{label:c=>
+      [c.raw.label+'：客户占比 '+c.raw.x+'%','价值密度 '+c.raw.y.toFixed(2),'客户数 '+F(c.raw.n)]}}},
+   scales:{x:{min:0,max:33,title:{display:true,text:'客户占比（%）',color:'#5F5E5A',font:{size:11.5}},
+     ticks:{color:'#5F5E5A',font:{size:11.5},callback:v=>v+'%'},grid:{color:'rgba(0,0,0,0.06)'}},
+     y:{title:{display:true,text:'价值密度',color:'#5F5E5A',font:{size:11.5}},
+     ticks:{color:'#5F5E5A',font:{size:11.5}},grid:{color:'rgba(0,0,0,0.06)'}}}}});
+</script>
+</body>
+</html>

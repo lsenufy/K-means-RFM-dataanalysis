@@ -1,0 +1,10 @@
+# RFM和K-means 用户分层项目 —— Python 依赖
+# 实测兼容版本：pandas 3.0.5 / numpy 2.x / scipy 1.x / scikit-learn 1.9.0
+# Python >= 3.11
+pandas
+numpy
+scipy
+scikit-learn
+matplotlib
+jupyter
+openpyxl
